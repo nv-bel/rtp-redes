@@ -1,0 +1,19 @@
+import sys
+from tkinter import Tk
+from Client import Client
+
+if __name__ == "__main__":
+	try:
+		serverAddr = sys.argv[1]
+		serverPort = sys.argv[2]
+		rtpPort = sys.argv[3]
+		fileName = sys.argv[4]	
+	except:
+		print("[Uso: ClientLauncher.py Nome_Servidor Porta_Servidor Porta_RTP Arquivo_Video]\n")	
+	
+	root = Tk()
+	
+	# Cria um novo cliente
+	app = Client(root, serverAddr, serverPort, rtpPort, fileName)
+	app.master.title("RTPClient")	
+	root.mainloop()
