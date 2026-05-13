@@ -17,9 +17,9 @@ class Client:
 	PLAY = 1
 	PAUSE = 2
 	TEARDOWN = 3
-	QOS_ALTA = 4
-	QOS_NORMAL = 5
-	QOS_BAIXA = 6
+	TX_RAPIDA = 4
+	TX_NORMAL = 5
+	TX_LENTA = 6
 	
 	# Iniciação
 	def __init__(self, master, serveraddr, serverport, rtpport, filename):
@@ -64,23 +64,23 @@ class Client:
 		self.teardown["command"] =  self.exitClient
 		self.teardown.grid(row=1, column=3, padx=2, pady=2)
 
-		# Cria botão QoS Alta
-		self.qosAlta = Button(self.master, width=20, padx=3, pady=3)
-		self.qosAlta["text"] = "QoS Alta"
-		self.qosAlta["command"] = self.setQosAlta
-		self.qosAlta.grid(row=2, column=0, padx=2, pady=2)
+		# Cria botão transmissão rápida
+		self.txRapida = Button(self.master, width=20, padx=3, pady=3)
+		self.txRapida["text"] = "Rápida"
+		self.txRapida["command"] = self.setTxRapida
+		self.txRapida.grid(row=2, column=0, padx=2, pady=2)
 
-		# Cria botão QoS Normal
-		self.qosNormal = Button(self.master, width=20, padx=3, pady=3)
-		self.qosNormal["text"] = "QoS Normal"
-		self.qosNormal["command"] = self.setQosNormal
-		self.qosNormal.grid(row=2, column=1, padx=2, pady=2)
+		# Cria botão transmissão normal
+		self.txNormal = Button(self.master, width=20, padx=3, pady=3)
+		self.txNormal["text"] = "Normal"
+		self.txNormal["command"] = self.setTxNormal
+		self.txNormal.grid(row=2, column=1, padx=2, pady=2)
 
-		# Cria botão QoS Baixa
-		self.qosBaixa = Button(self.master, width=20, padx=3, pady=3)
-		self.qosBaixa["text"] = "QoS Baixa"
-		self.qosBaixa["command"] = self.setQosBaixa
-		self.qosBaixa.grid(row=2, column=2, padx=2, pady=2)
+		# Cria botão transmissão lenta
+		self.txLenta = Button(self.master, width=20, padx=3, pady=3)
+		self.txLenta["text"] = "Lenta"
+		self.txLenta["command"] = self.setTxLenta
+		self.txLenta.grid(row=2, column=2, padx=2, pady=2)
 		
 		# Cria label para exibir o filme
 		self.label = Label(self.master, height=19)
@@ -111,20 +111,20 @@ class Client:
 			self.playEvent.clear()
 			self.sendRtspRequest(self.PLAY)
 
-	# Handler do botão QoS Alta
-	def setQosAlta(self):
+	# Handler do botão transmissão rápida
+	def setTxRapida(self):
 		if self.state != self.INIT:
-			self.sendRtspRequest(self.QOS_ALTA)
+			self.sendRtspRequest(self.TX_RAPIDA)
 
-	# Handler do botão QoS Normal
-	def setQosNormal(self):
+	# Handler do botão transmissão normal
+	def setTxNormal(self):
 		if self.state != self.INIT:
-			self.sendRtspRequest(self.QOS_NORMAL)
+			self.sendRtspRequest(self.TX_NORMAL)
 
-	# Handler do botão QoS Baixa
-	def setQosBaixa(self):
+	# Handler do botão transmissão lenta
+	def setTxLenta(self):
 		if self.state != self.INIT:
-			self.sendRtspRequest(self.QOS_BAIXA)
+			self.sendRtspRequest(self.TX_LENTA)
 	
 	# Escuta pacotes RTP
 	def listenRtp(self):		
@@ -230,44 +230,44 @@ class Client:
 			# Acompanha a solicitação enviada
 			self.requestSent = self.TEARDOWN
 
-		# Solicitação QoS Alta
-		elif requestCode == self.QOS_ALTA and self.state != self.INIT:
+		# Solicitação transmissão rápida
+		elif requestCode == self.TX_RAPIDA and self.state != self.INIT:
 			# Atualiza o número de sequência RTSP
 			self.rtspSeq = self.rtspSeq + 1
 
 			# Escreve a solicitação RTSP a ser enviada
-			request = "QOS_ALTA " + "\n " + str(self.rtspSeq)
+			request = "TX_RAPIDA " + "\n " + str(self.rtspSeq)
 			self.rtspSocket.send(request.encode("utf-8"))
-			print ('-'*60 + "\nSolicitação QoS ALTA enviada ao Servidor...\n" + '-'*60)
+			print ('-'*60 + "\nSolicitação transmissão RÁPIDA enviada ao Servidor...\n" + '-'*60)
 
 			# Acompanha a solicitação enviada
-			self.requestSent = self.QOS_ALTA
+			self.requestSent = self.TX_RAPIDA
 
-		# Solicitação QoS Normal
-		elif requestCode == self.QOS_NORMAL and self.state != self.INIT:
+		# Solicitação transmissão normal
+		elif requestCode == self.TX_NORMAL and self.state != self.INIT:
 			# Atualiza o número de sequência RTSP
 			self.rtspSeq = self.rtspSeq + 1
 
 			# Escreve a solicitação RTSP a ser enviada
-			request = "QOS_NORMAL " + "\n " + str(self.rtspSeq)
+			request = "TX_NORMAL " + "\n " + str(self.rtspSeq)
 			self.rtspSocket.send(request.encode("utf-8"))
-			print ('-'*60 + "\nSolicitação QoS NORMAL enviada ao Servidor...\n" + '-'*60)
+			print ('-'*60 + "\nSolicitação transmissão NORMAL enviada ao Servidor...\n" + '-'*60)
 
 			# Acompanha a solicitação enviada
-			self.requestSent = self.QOS_NORMAL
+			self.requestSent = self.TX_NORMAL
 
-		# Solicitação QoS Baixa
-		elif requestCode == self.QOS_BAIXA and self.state != self.INIT:
+		# Solicitação transmissão lenta
+		elif requestCode == self.TX_LENTA and self.state != self.INIT:
 			# Atualiza o número de sequência RTSP
 			self.rtspSeq = self.rtspSeq + 1
 
 			# Escreve a solicitação RTSP a ser enviada
-			request = "QOS_BAIXA " + "\n " + str(self.rtspSeq)
+			request = "TX_LENTA " + "\n " + str(self.rtspSeq)
 			self.rtspSocket.send(request.encode("utf-8"))
-			print ('-'*60 + "\nSolicitação QoS BAIXA enviada ao Servidor...\n" + '-'*60)
+			print ('-'*60 + "\nSolicitação transmissão LENTA enviada ao Servidor...\n" + '-'*60)
 
 			# Acompanha a solicitação enviada
-			self.requestSent = self.QOS_BAIXA
+			self.requestSent = self.TX_LENTA
 
 		else:
 			return
@@ -328,14 +328,14 @@ class Client:
 						# Sinalizar teardownAcked para encerrar o socket
 						self.teardownAcked = 1 
 
-					elif self.requestSent == self.QOS_ALTA:
-						print("QoS ALTA confirmada pelo servidor.")
+					elif self.requestSent == self.TX_RAPIDA:
+						print("Transmissão RÁPIDA confirmada pelo servidor.")
 
-					elif self.requestSent == self.QOS_NORMAL:
-						print("QoS NORMAL confirmada pelo servidor.")
+					elif self.requestSent == self.TX_NORMAL:
+						print("Transmissão NORMAL confirmada pelo servidor.")
 
-					elif self.requestSent == self.QOS_BAIXA:
-						print("QoS BAIXA confirmada pelo servidor.")
+					elif self.requestSent == self.TX_LENTA:
+						print("Transmissão LENTA confirmada pelo servidor.")
 	
 	# Abre o socket RTP conectado a uma porta específica
 	def openRtpPort(self):

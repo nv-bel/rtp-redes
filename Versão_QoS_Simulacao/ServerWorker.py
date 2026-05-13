@@ -10,14 +10,14 @@ class ServerWorker:
 	PAUSE = 'PAUSE'
 	TEARDOWN = 'TEARDOWN'
 
-	QOS_ALTA_CMD = 'QOS_ALTA'
-	QOS_NORMAL_CMD = 'QOS_NORMAL'
-	QOS_BAIXA_CMD = 'QOS_BAIXA'
+	TX_RAPIDA_CMD = 'TX_RAPIDA'
+	TX_NORMAL_CMD = 'TX_NORMAL'
+	TX_LENTA_CMD = 'TX_LENTA'
 
-	# Perfis simples de QoS
-	QOS_ALTA = 0.01
-	QOS_NORMAL = 0.05
-	QOS_BAIXA = 1.00
+	# Perfis simples de velocidade de transmissão
+	TX_RAPIDA = 0.01
+	TX_NORMAL = 0.05
+	TX_LENTA = 1.00
 	
 	INIT = 0
 	READY = 1
@@ -33,8 +33,8 @@ class ServerWorker:
 	def __init__(self, clientInfo):
 		self.clientInfo = clientInfo
 
-		# QoS padrão: transmissão normal
-		self.qos_delay = self.QOS_NORMAL
+		# Velocidade padrão: transmissão normal
+		self.transmission_delay = self.TX_NORMAL
 		
 	def run(self):
 		threading.Thread(target=self.recvRtspRequest).start()
@@ -76,7 +76,7 @@ class ServerWorker:
 		elif requestType == self.PLAY:
 			if self.state == self.READY:
 				print("Processando PLAY\n")
-				print("QoS aplicada - intervalo de envio =", self.qos_delay)
+				print("Velocidade de transmissão aplicada - intervalo de envio =", self.transmission_delay)
 				
 				self.state = self.PLAYING
 				
@@ -107,29 +107,29 @@ class ServerWorker:
 			
 			self.clientInfo['rtpSocket'].close()
 
-		elif requestType == self.QOS_ALTA_CMD:
-			self.qos_delay = self.QOS_ALTA
-			print("QoS alterada para ALTA")
-			print("Novo delay:", self.qos_delay)
+		elif requestType == self.TX_RAPIDA_CMD:
+			self.transmission_delay = self.TX_RAPIDA
+			print("Velocidade de transmissão alterada para RÁPIDA")
+			print("Novo delay:", self.transmission_delay)
 			self.replyRtsp(self.OK_200, seq[1])
 
-		elif requestType == self.QOS_NORMAL_CMD:
-			self.qos_delay = self.QOS_NORMAL
-			print("QoS alterada para NORMAL")
-			print("Novo delay:", self.qos_delay)
+		elif requestType == self.TX_NORMAL_CMD:
+			self.transmission_delay = self.TX_NORMAL
+			print("Velocidade de transmissão alterada para NORMAL")
+			print("Novo delay:", self.transmission_delay)
 			self.replyRtsp(self.OK_200, seq[1])
 
-		elif requestType == self.QOS_BAIXA_CMD:
-			self.qos_delay = self.QOS_BAIXA
-			print("QoS alterada para BAIXA")
-			print("Novo delay:", self.qos_delay)
+		elif requestType == self.TX_LENTA_CMD:
+			self.transmission_delay = self.TX_LENTA
+			print("Velocidade de transmissão alterada para LENTA")
+			print("Novo delay:", self.transmission_delay)
 			self.replyRtsp(self.OK_200, seq[1])
 			
 	# Envia pacotes RTP por UDP
 	def sendRtp(self):
 		while True:
-			# QoS: controla o intervalo de envio dos pacotes RTP
-			self.clientInfo['event'].wait(self.qos_delay)
+			# Controla o intervalo de envio dos pacotes RTP
+			self.clientInfo['event'].wait(self.transmission_delay)
 			
 			if self.clientInfo['event'].isSet(): 
 				break 
