@@ -10,14 +10,14 @@ class ServerWorker:
 	PAUSE = 'PAUSE'
 	TEARDOWN = 'TEARDOWN'
 
-	QOS_ALTA = 'QOS_ALTA'
-	QOS_NORMAL = 'QOS_NORMAL'
-	QOS_BAIXA = 'QOS_BAIXA'
+	QOS_ALTA_CMD = 'QOS_ALTA'
+	QOS_NORMAL_CMD = 'QOS_NORMAL'
+	QOS_BAIXA_CMD = 'QOS_BAIXA'
 
 	# Perfis simples de QoS
 	QOS_ALTA = 0.01
 	QOS_NORMAL = 0.05
-	QOS_BAIXA = 0.20
+	QOS_BAIXA = 1.00
 	
 	INIT = 0
 	READY = 1
@@ -76,7 +76,7 @@ class ServerWorker:
 		elif requestType == self.PLAY:
 			if self.state == self.READY:
 				print("Processando PLAY\n")
-				print("QoS aplicada: perfil NORMAL - intervalo de envio =", self.qos_delay)
+				print("QoS aplicada - intervalo de envio =", self.qos_delay)
 				
 				self.state = self.PLAYING
 				
@@ -102,7 +102,24 @@ class ServerWorker:
 			self.replyRtsp(self.OK_200, seq[1])
 			
 			self.clientInfo['rtpSocket'].close()
-		
+
+		elif requestType == self.QOS_ALTA_CMD:
+			self.qos_delay = self.QOS_ALTA
+			print("QoS alterada para ALTA")
+			print("Novo delay:", self.qos_delay)
+			self.replyRtsp(self.OK_200, seq[1])
+
+		elif requestType == self.QOS_NORMAL_CMD:
+			self.qos_delay = self.QOS_NORMAL
+			print("QoS alterada para NORMAL")
+			print("Novo delay:", self.qos_delay)
+			self.replyRtsp(self.OK_200, seq[1])
+
+		elif requestType == self.QOS_BAIXA_CMD:
+			self.qos_delay = self.QOS_BAIXA
+			print("QoS alterada para BAIXA")
+			print("Novo delay:", self.qos_delay)
+			self.replyRtsp(self.OK_200, seq[1])
 			
 	# Envia pacotes RTP por UDP
 	def sendRtp(self):
@@ -115,20 +132,25 @@ class ServerWorker:
 				
 			data = self.clientInfo['videoStream'].nextFrame()
 
-			if data: 
-				frameNumber = self.clientInfo['videoStream'].frameNbr()
+			# Se não houver mais frames, encerra o envio RTP
+			if not data:
+				print("Fim do vídeo. Encerrando transmissão RTP.")
+				break
 
-				try:
-					address = self.clientInfo['rtspSocket'][1][0]
-					port = int(self.clientInfo['rtpPort'])
+			frameNumber = self.clientInfo['videoStream'].frameNbr()
 
-					self.clientInfo['rtpSocket'].sendto(
-						self.makeRtp(data, frameNumber),
-						(address, port)
-					)
+			try:
+				address = self.clientInfo['rtspSocket'][1][0]
+				port = int(self.clientInfo['rtpPort'])
 
-				except:
-					print("Erro de conexão")
+				self.clientInfo['rtpSocket'].sendto(
+					self.makeRtp(data, frameNumber),
+					(address, port)
+				)
+
+			except:
+				print("Socket RTP indisponível. Encerrando transmissão.")
+				break
 
 	# RTP - Empacotando dados de vídeo
 	def makeRtp(self, payload, frameNbr):
