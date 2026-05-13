@@ -10,10 +10,14 @@ class ServerWorker:
 	PAUSE = 'PAUSE'
 	TEARDOWN = 'TEARDOWN'
 
+	QOS_ALTA = 'QOS_ALTA'
+	QOS_NORMAL = 'QOS_NORMAL'
+	QOS_BAIXA = 'QOS_BAIXA'
+
 	# Perfis simples de QoS
-	QOS_ALTA = 0.03
+	QOS_ALTA = 0.01
 	QOS_NORMAL = 0.05
-	QOS_BAIXA = 0.08
+	QOS_BAIXA = 0.20
 	
 	INIT = 0
 	READY = 1
@@ -98,6 +102,7 @@ class ServerWorker:
 			self.replyRtsp(self.OK_200, seq[1])
 			
 			self.clientInfo['rtpSocket'].close()
+		
 			
 	# Envia pacotes RTP por UDP
 	def sendRtp(self):
