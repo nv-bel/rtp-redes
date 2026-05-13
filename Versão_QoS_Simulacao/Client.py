@@ -17,6 +17,9 @@ class Client:
 	PLAY = 1
 	PAUSE = 2
 	TEARDOWN = 3
+	QOS_ALTA = 4
+	QOS_NORMAL = 5
+	QOS_BAIXA = 6
 	
 	# Iniciação
 	def __init__(self, master, serveraddr, serverport, rtpport, filename):
@@ -60,6 +63,24 @@ class Client:
 		self.teardown["text"] = "Teardown"
 		self.teardown["command"] =  self.exitClient
 		self.teardown.grid(row=1, column=3, padx=2, pady=2)
+
+		# Cria botão QoS Alta
+		self.qosAlta = Button(self.master, width=20, padx=3, pady=3)
+		self.qosAlta["text"] = "QoS Alta"
+		self.qosAlta["command"] = self.setQosAlta
+		self.qosAlta.grid(row=2, column=0, padx=2, pady=2)
+
+		# Cria botão QoS Normal
+		self.qosNormal = Button(self.master, width=20, padx=3, pady=3)
+		self.qosNormal["text"] = "QoS Normal"
+		self.qosNormal["command"] = self.setQosNormal
+		self.qosNormal.grid(row=2, column=1, padx=2, pady=2)
+
+		# Cria botão QoS Baixa
+		self.qosBaixa = Button(self.master, width=20, padx=3, pady=3)
+		self.qosBaixa["text"] = "QoS Baixa"
+		self.qosBaixa["command"] = self.setQosBaixa
+		self.qosBaixa.grid(row=2, column=2, padx=2, pady=2)
 		
 		# Cria label para exibir o filme
 		self.label = Label(self.master, height=19)
@@ -89,6 +110,21 @@ class Client:
 			self.playEvent = threading.Event()
 			self.playEvent.clear()
 			self.sendRtspRequest(self.PLAY)
+
+	# Handler do botão QoS Alta
+	def setQosAlta(self):
+		if self.state != self.INIT:
+			self.sendRtspRequest(self.QOS_ALTA)
+
+	# Handler do botão QoS Normal
+	def setQosNormal(self):
+		if self.state != self.INIT:
+			self.sendRtspRequest(self.QOS_NORMAL)
+
+	# Handler do botão QoS Baixa
+	def setQosBaixa(self):
+		if self.state != self.INIT:
+			self.sendRtspRequest(self.QOS_BAIXA)
 	
 	# Escuta pacotes RTP
 	def listenRtp(self):		
@@ -193,6 +229,46 @@ class Client:
 
 			# Acompanha a solicitação enviada
 			self.requestSent = self.TEARDOWN
+
+		# Solicitação QoS Alta
+		elif requestCode == self.QOS_ALTA and self.state != self.INIT:
+			# Atualiza o número de sequência RTSP
+			self.rtspSeq = self.rtspSeq + 1
+
+			# Escreve a solicitação RTSP a ser enviada
+			request = "QOS_ALTA " + "\n " + str(self.rtspSeq)
+			self.rtspSocket.send(request.encode("utf-8"))
+			print ('-'*60 + "\nSolicitação QoS ALTA enviada ao Servidor...\n" + '-'*60)
+
+			# Acompanha a solicitação enviada
+			self.requestSent = self.QOS_ALTA
+
+		# Solicitação QoS Normal
+		elif requestCode == self.QOS_NORMAL and self.state != self.INIT:
+			# Atualiza o número de sequência RTSP
+			self.rtspSeq = self.rtspSeq + 1
+
+			# Escreve a solicitação RTSP a ser enviada
+			request = "QOS_NORMAL " + "\n " + str(self.rtspSeq)
+			self.rtspSocket.send(request.encode("utf-8"))
+			print ('-'*60 + "\nSolicitação QoS NORMAL enviada ao Servidor...\n" + '-'*60)
+
+			# Acompanha a solicitação enviada
+			self.requestSent = self.QOS_NORMAL
+
+		# Solicitação QoS Baixa
+		elif requestCode == self.QOS_BAIXA and self.state != self.INIT:
+			# Atualiza o número de sequência RTSP
+			self.rtspSeq = self.rtspSeq + 1
+
+			# Escreve a solicitação RTSP a ser enviada
+			request = "QOS_BAIXA " + "\n " + str(self.rtspSeq)
+			self.rtspSocket.send(request.encode("utf-8"))
+			print ('-'*60 + "\nSolicitação QoS BAIXA enviada ao Servidor...\n" + '-'*60)
+
+			# Acompanha a solicitação enviada
+			self.requestSent = self.QOS_BAIXA
+
 		else:
 			return
 		
@@ -251,6 +327,15 @@ class Client:
 						
 						# Sinalizar teardownAcked para encerrar o socket
 						self.teardownAcked = 1 
+
+					elif self.requestSent == self.QOS_ALTA:
+						print("QoS ALTA confirmada pelo servidor.")
+
+					elif self.requestSent == self.QOS_NORMAL:
+						print("QoS NORMAL confirmada pelo servidor.")
+
+					elif self.requestSent == self.QOS_BAIXA:
+						print("QoS BAIXA confirmada pelo servidor.")
 	
 	# Abre o socket RTP conectado a uma porta específica
 	def openRtpPort(self):
