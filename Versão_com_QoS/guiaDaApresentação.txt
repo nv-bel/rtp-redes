@@ -1,4 +1,4 @@
 ABRIR O PRIMEIRO TERMINAL E COLOCAR: 
-python server.py 5544
+python server.py 554
 ABRIR O SEGUNDO TERMINAL E COLOCAR: 
 python ClientLauncher.py
