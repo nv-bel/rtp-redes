@@ -1,0 +1,51 @@
+# Caches do Python e arquivos compilados
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ambientes Virtuais (Virtual Environments)
+.venv/
+venv/
+ENV/
+env/
+
+# Arquivos de configuração local e variáveis de ambiente (Segurança)
+.env
+.env.local
+*.env
+
+# Distribuição e Pacotes (Builds)
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+
+# Arquivos de IDEs comuns (VS Code e PyCharm)
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Relatórios de testes e cobertura de código
+htmlcov/
+.tox/
+.nosetests
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.pytest_cache/
