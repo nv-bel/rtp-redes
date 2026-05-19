@@ -1,0 +1,85 @@
+--- CLIENTE → SERVIDOR (TCP porta 554) ---
+
+DESCRIBE rtsp://stream.exemplo.com/video.sdp RTSP/1.0
+CSeq: 1
+User-Agent: VLC/3.0.18
+Accept: application/sdp
+
+--- SERVIDOR → CLIENTE ---
+
+RTSP/1.0 200 OK
+CSeq: 1
+Content-Type: application/sdp
+Content-Length: 214
+
+v=0
+o=- 1234567 1 IN IP4 192.168.1.10
+s=Exemplo de Stream
+t=0 0
+m=video 0 RTP/AVP 96          ← PT=96 dinâmico, codec negociado
+a=rtpmap:96 H264/90000          ← H264, clock 90kHz
+m=audio 0 RTP/AVP 0           ← PT=0 = PCM µ-law 8kHz
+a=rtpmap:0 PCMU/8000
+
+--- CLIENTE → SERVIDOR ---
+
+SETUP rtsp://stream.exemplo.com/video.sdp/track1 RTSP/1.0
+CSeq: 2
+Transport: RTP/AVP;unicast;client_port=50000-50001
+                         ↑ RTP na 50000, RTCP na 50001
+
+--- SERVIDOR → CLIENTE ---
+
+RTSP/1.0 200 OK
+CSeq: 2
+Session: A1B2C3D4          ← session ID para comandos futuros
+Transport: RTP/AVP;unicast;client_port=50000-50001;server_port=9000-9001
+
+--- CLIENTE → SERVIDOR ---
+
+PLAY rtsp://stream.exemplo.com/video.sdp RTSP/1.0
+CSeq: 3
+Session: A1B2C3D4
+Range: npt=0-               ← a partir do início, sem fim definido
+
+--- SERVIDOR → CLIENTE ---
+
+RTSP/1.0 200 OK
+CSeq: 3
+Session: A1B2C3D4
+RTP-Info: url=...track1;seq=1000;rtptime=90000
+          ↑ seq inicial e timestamp inicial do RTP
+
+[ agora o servidor começa a enviar pacotes RTP via UDP ]
+
+--- CLIENTE → SERVIDOR (para parar) ---
+
+TEARDOWN rtsp://stream.exemplo.com/video.sdp RTSP/1.0
+CSeq: 4
+Session: A1B2C3D4
+
+
+
+
+
+
+--- PACOTE RTP (UDP, bytes em hex + anotações) ---
+
+Byte 0:   10000000  = V=2, P=0, X=0, CC=0
+          ↑ versão 2, sem padding, sem extension, 0 CSRC
+
+Byte 1:   11110000 0  = M=1, PT=96
+          ↑ M=1: último pacote deste frame (frame boundary!)
+             PT=96: H264 (negociado no SDP)
+
+Bytes 2-3: 03E8  = Sequence Number = 1000
+           ↑ primeiro pacote desta sessão
+
+Bytes 4-7: 00015F90  = Timestamp = 90000
+           ↑ em clock 90kHz → t=0s (início do stream)
+              próximo frame: 90000 + 3000 = 93000 (a 30fps)
+
+Bytes 8-11: A3F2C1D0  = SSRC da câmera/servidor
+            ↑ identifica unicamente esta fonte de vídeo
+
+Bytes 12+: [payload H264 NAL units...]
